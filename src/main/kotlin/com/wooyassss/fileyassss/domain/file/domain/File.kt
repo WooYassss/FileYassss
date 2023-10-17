@@ -10,7 +10,8 @@ data class File(
     @Id @Value("file_id")
     val id: String? = null,
     var name: String,
-    var signature: String,
+    var extension: String,
+    var size: Long,
     var path: String,
     val uploader: String,
     // 시간 저장
