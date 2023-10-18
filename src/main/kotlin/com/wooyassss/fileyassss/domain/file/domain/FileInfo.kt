@@ -5,9 +5,9 @@ import org.springframework.data.annotation.Id
 import org.springframework.data.mongodb.core.mapping.Document
 import java.time.LocalDate
 
-@Document("Files")
-data class File(
-    @Id @Value("file_id")
+@Document("FileInfos")
+data class FileInfo(
+    @Id @Value("id")
     val id: String? = null,
     var name: String,
     var extension: String,
