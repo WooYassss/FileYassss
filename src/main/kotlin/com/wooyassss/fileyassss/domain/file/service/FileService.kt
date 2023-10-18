@@ -1,13 +1,12 @@
 package com.wooyassss.fileyassss.domain.file.service
 
-import com.wooyassss.fileyassss.domain.file.domain.File
+import com.wooyassss.fileyassss.domain.file.domain.FileInfo
 import com.wooyassss.fileyassss.domain.file.dto.reqeust.SaveFileRequest
-import org.springframework.stereotype.Service
+import kotlinx.coroutines.flow.Flow
 
-@Service
 interface FileService {
-    suspend fun saveFile(req: SaveFileRequest): File
-    suspend fun findById(id: String): File
-    suspend fun findByUploader(uploader: String): List<File>
-    suspend fun findByPath(path: String): File
+    suspend fun findById(id: String): FileInfo
+    suspend fun findByPath(path: String): FileInfo
+    fun findByUploader(uploader: String): Flow<FileInfo>
+    suspend fun saveFile(req: SaveFileRequest): Flow<FileInfo>
 }
