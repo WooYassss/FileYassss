@@ -1,6 +1,9 @@
 package com.wooyassss.fileyassss.domain.file.dto.reqeust
 
+import org.springframework.http.codec.multipart.FilePart
+import reactor.core.publisher.Flux
+
 data class SaveFileRequest(
-    val fileName: String,
-    val uploader: String = "Anonymous",
+    val uploader: String? = "Anonymous",
+    val files: Flux<FilePart>
 )
