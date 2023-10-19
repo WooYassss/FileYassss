@@ -4,16 +4,22 @@ import com.wooyassss.fileyassss.common.util.IllegalArgsEx
 import com.wooyassss.fileyassss.domain.file.domain.FileInfo
 import com.wooyassss.fileyassss.domain.file.domain.FileInfoRepository
 import com.wooyassss.fileyassss.domain.file.dto.reqeust.SaveFileRequest
-import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.reactive.asFlow
 import kotlinx.coroutines.reactor.awaitSingleOrNull
+import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
-import kotlin.math.log
+import java.io.File
+import java.nio.file.Path
 
 @Service
-class FileServiceImpl (
-    private val repository: FileInfoRepository
+class FileServiceImpl(
+    private val repository: FileInfoRepository,
+    @Value("\${base.file.path}") private val basePath: String,
 ) : FileService {
+
+    private val log = LoggerFactory.getLogger(javaClass)
 
     override suspend fun findById(id: String): FileInfo =
         repository.findById(id)
@@ -29,8 +35,28 @@ class FileServiceImpl (
             .awaitSingleOrNull()
             ?: IllegalArgsEx("조회된 파일이 없습니다. path = $path")
 
-    override suspend fun saveFile(req: SaveFileRequest): Flow<FileInfo> {
-//        req.files.doOnNext { println(it.filename()) }.flatMap {  }
+    override fun saveFile(req: SaveFileRequest): Flow<Void> {
+        return req.files
+            .flatMapMerge {
+                log.info("저장중 .. FileName={}", it.filename())
+                it.transferTo(
+                    // /$basePath/$upLoader
+                    createPath(req.uploader).resolve(it.filename())).asFlow()
+            }
+    }
+
+    private suspend fun createPath(path: String): Path {
+        val directory = File("$basePath/$path")
+
+        return if (directory.exists())
+            directory.toPath()
+        else {
+            directory.mkdir()
+            createPath(path)
+        }
+    }
+
+    private suspend fun mappingFileInfo() {
 
     }
 }
