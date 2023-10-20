@@ -15,6 +15,6 @@ data class FileInfo(
     var path: String,
     val uploader: String,
     // 시간 저장
-    val createdAt: LocalDate,
-    var updatedAt: LocalDate
+    val createdAt: LocalDate? = null,
+    var updatedAt: LocalDate? = null
 )
