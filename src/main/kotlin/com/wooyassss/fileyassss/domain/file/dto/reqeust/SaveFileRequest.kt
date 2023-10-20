@@ -4,6 +4,6 @@ import kotlinx.coroutines.flow.Flow
 import org.springframework.http.codec.multipart.FilePart
 
 data class SaveFileRequest(
-    val uploader: String = "Anonymous",
+    val uploader: String,
     val files: Flow<FilePart>
 )
