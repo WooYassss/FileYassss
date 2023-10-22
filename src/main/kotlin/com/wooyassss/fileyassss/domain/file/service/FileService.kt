@@ -8,5 +8,5 @@ interface FileService {
     suspend fun findById(id: String): FileInfo
     suspend fun findByPath(path: String): FileInfo
     fun findByUploader(uploader: String): Flow<FileInfo>
-    fun saveFile(req: SaveFileRequest): Flow<Void>
+    fun saveFile(req: SaveFileRequest): Flow<FileInfo>
 }
