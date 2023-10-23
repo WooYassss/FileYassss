@@ -12,14 +12,15 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.codec.multipart.FilePart
 import org.springframework.stereotype.Service
+import reactor.core.publisher.Mono
 import java.io.File
 import java.nio.file.Path
 import kotlin.io.path.fileSize
-
 @Service
 class FileServiceImpl(
+    @Value("\${base.file.path}")
+    private val basePath: String,
     private val repository: FileInfoRepository,
-    @Value("\${base.file.path}") private val basePath: String,
 ) : FileService {
 
     private val log = LoggerFactory.getLogger(javaClass)
@@ -38,38 +39,37 @@ class FileServiceImpl(
             .awaitSingleOrNull()
             ?: IllegalArgsEx("조회된 파일이 없습니다. path = $path")
 
-    override fun saveFile(req: SaveFileRequest): Flow<FileInfo> {
-        return req.files.flatMapMerge {
-            saveFilePart(it, req.uploader)
+    override fun saveFile(req: SaveFileRequest): Flow<FileInfo> =
+        req.files.flatMapConcat { file ->
+            // /$basePath/$uploader
+            val filePath = createPath(req.uploader).resolve(file.filename())
+
+            saveFilePart(file, filePath)
+            saveFileInfo(file, filePath, req.uploader)
         }
+
+    private suspend fun saveFilePart(
+        file: FilePart,
+        filePath: Path
+    ) {
+        log.info("SaveFile FileName={}", file.filename())
+        file.transferTo(filePath).awaitSingleOrNull()
     }
 
-    private suspend fun saveFilePart(filePart: FilePart, uploader: String): Flow<FileInfo> {
-
-        // /$basePath/$uploader
-        val saveFilePath = createPath(uploader).resolve(filePart.filename())
-
-        if (saveFilePath.toFile().exists())
-            throw FileAlreadyExistsException(saveFilePath.toFile())
-
-        log.info("SaveFile FileName={}", filePart.filename())
-
-        return flow {
-            filePart.transferTo(saveFilePath).awaitSingleOrNull()
-
-            emit(
-                repository.save(
-                    FileInfo(
-                        name = filePart.filename(),
-                        extension = saveFilePath.toFile().extension,
-                        size = saveFilePath.fileSize(),
-                        path = saveFilePath.toString(),
-                        uploader = uploader,
-                    )
-                ).awaitSingle()
+    private suspend fun saveFileInfo(
+        file: FilePart,
+        filePath: Path,
+        uploader: String
+    ): Flow<FileInfo> =
+        repository.save(
+            FileInfo(
+                name = file.filename(),
+                extension = filePath.toFile().extension,
+                size = filePath.fileSize(),
+                path = filePath.toString(),
+                uploader = uploader,
             )
-        }
-    }
+        ).asFlow()
 
     private suspend fun createPath(path: String): Path {
         val directory = File("$basePath/$path")
@@ -83,3 +83,4 @@ class FileServiceImpl(
         }
     }
 }
+
