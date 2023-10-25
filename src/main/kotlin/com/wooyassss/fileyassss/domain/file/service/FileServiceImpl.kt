@@ -67,8 +67,8 @@ class FileServiceImpl(
     private suspend fun createFileId(): String {
         val timestamp = Timestamp.valueOf(LocalDateTime.now())
         val random = Random(timestamp.time).nextInt(10..40)
-
         val fileId = timestamp.time.toString() + random.toString()
+
         log.info("createFileId ={}", fileId)
         return fileId
     }
