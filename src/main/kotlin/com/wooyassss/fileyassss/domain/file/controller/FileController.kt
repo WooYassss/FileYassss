@@ -5,6 +5,7 @@ import com.wooyassss.fileyassss.domain.file.dto.reqeust.SaveFileRequest
 import com.wooyassss.fileyassss.domain.file.service.FileService
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.reactive.asFlow
+import org.slf4j.LoggerFactory
 import org.springframework.http.codec.multipart.FilePart
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestHeader
@@ -18,12 +19,14 @@ class FileController(
     private val fileService: FileService
 ) {
 
+    private val log = LoggerFactory.getLogger(javaClass)
+
     @PostMapping("/save")
     suspend fun saveFile(
         @RequestHeader("user-name", required = false) uploader: String?,
         @RequestPart("files") files: Flux<FilePart>
     ): Flow<FileInfo> {
-         return fileService.saveFile(
+        return fileService.saveFile(
             SaveFileRequest(
                 uploader = uploader ?: "Anonymous",
                 files = files.asFlow()
