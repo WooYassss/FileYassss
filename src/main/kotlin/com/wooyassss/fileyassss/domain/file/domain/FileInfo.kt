@@ -5,7 +5,6 @@ import org.springframework.data.annotation.CreatedDate
 import org.springframework.data.annotation.Id
 import org.springframework.data.annotation.LastModifiedDate
 import org.springframework.data.mongodb.core.mapping.Document
-import java.time.LocalDate
 import java.time.LocalDateTime
 
 @Document("FileInfos")
@@ -14,8 +13,9 @@ data class FileInfo(
     val id: String? = null,
     var name: String,
     var extension: String,
+    var path: String? = null,
     var size: Long,
-    var path: String,
+    var uploadedSize: Long = 0,
     val uploader: String,
     @CreatedDate
     val createdAt: LocalDateTime = LocalDateTime.now(),
