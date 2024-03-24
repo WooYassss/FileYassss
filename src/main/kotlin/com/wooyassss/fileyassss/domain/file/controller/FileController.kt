@@ -26,7 +26,12 @@ class FileController(
     suspend fun uploadFileInfo(
         @RequestBody request: UploadFileInfoRequest
     ): String {
-        val fileInfo = FileInfo(name = request.name, extension = request.extension, size = request.size, uploader = request.uploader)
+        val fileInfo = FileInfo(
+            name = request.name,
+            extension = request.extension,
+            size = request.size,
+            uploader = request.uploader
+        )
         val savedFileInfo = fileInfoService.saveFileInfo(fileInfo)
 
         log.info("FileInfo Save Successfully: $savedFileInfo.id")
@@ -38,9 +43,17 @@ class FileController(
     suspend fun uploadFile(
         @RequestHeader fileId: String,
         @RequestPart("file") file: FilePart
-    ) :UploadFileResponse {
+    ): UploadFileResponse {
         val savedFile = fileService.saveFile("GGOS3", fileId, file)
 
-        return UploadFileResponse(savedFile.id!!, (savedFile.size / savedFile.uploadedSize * 100))
+        val uploadProgress = if (savedFile.uploadedSize > 0 && savedFile.size > 0) {
+            (savedFile.uploadedSize.toDouble() / savedFile.size) * 100
+        } else {
+            0.0 // 업로드된 크기나 파일 크기가 0일 경우, 진행률도 0으로 설정
+        }
+
+        log.info("FileUpload Success :${savedFile.id!!}, Progress: $uploadProgress%")
+        return UploadFileResponse(savedFile.id, uploadProgress)
     }
+
 }

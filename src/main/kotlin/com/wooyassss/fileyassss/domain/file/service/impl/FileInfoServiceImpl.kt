@@ -53,4 +53,10 @@ class FileInfoServiceImpl(
             .block()
             ?: IllegalArgsEx("조회된 파일이 없습니다. id = $id")
     }
+
+    override suspend fun updatePath(id: String, path: String): FileInfo {
+        val fileInfo = this.findById(id)
+        fileInfo.path = path
+        return this.saveFileInfo(fileInfo)
+    }
 }

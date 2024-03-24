@@ -9,7 +9,7 @@ import java.time.LocalDateTime
 
 @Document("FileInfos")
 data class FileInfo(
-    @Id @Value("id")
+    @Id
     val id: String? = null,
     var name: String,
     var extension: String,
